@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: Alfa Credit — proposed integration contract
+  version: 0.1.0
+servers:
+  - url: /api/v1
+paths:
+  /applications:
+    get:
+      summary: List current user's applications
+      responses:
+        '200':
+          description: Applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+        '401':
+          description: Authentication required
+    post:
+      summary: Submit an application
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '422':
+          description: Invalid input
+  /assistant/messages:
+    post:
+      summary: Future assistant endpoint — currently stubbed locally
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message: {type: string, maxLength: 1000}
+      responses:
+        '200':
+          description: Assistant reply
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: {type: string}
+components:
+  schemas:
+    ApplicationInput:
+      type: object
+      required: [company, inn, revenue, ageMonths, amount, months, purpose]
+      properties:
+        company: {type: string, maxLength: 120}
+        inn: {type: string, pattern: '^([0-9]{10}|[0-9]{12})$'}
+        revenue: {type: number, minimum: 1}
+        ageMonths: {type: integer, minimum: 1, maximum: 1200}
+        amount: {type: number, minimum: 100000, maximum: 10000000}
+        months: {type: integer, minimum: 6, maximum: 60}
+        purpose:
+          type: string
+          enum: [Оборотные средства, Оборудование, Развитие бизнеса]
+    Application:
+      allOf:
+        - $ref: '#/components/schemas/ApplicationInput'
+        - type: object
+          properties:
+            id: {type: string, format: uuid}
+            createdAt: {type: string, format: date-time}
+            status:
+              type: string
+              enum: [draft, submitted, checking, needs_info, approved, declined, counteroffer, accepted, signed, funded]
