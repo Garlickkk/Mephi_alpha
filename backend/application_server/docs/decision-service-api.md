@@ -278,4 +278,10 @@ Content-Type: application/json
 Он адаптирует существующий Java-контракт к скоринговой карте из 12 факторов. Пока реальные РКО/БКИ/оценка залога отсутствуют,
 они воспроизводятся детерминированными локальными моками; точка замены находится в `deterministic_external_mocks()`.
 Дополнительно сервис возвращает `score`, `riskGrade`, `interestRate`, `monthlyPayment`, `dtiRatio`, `profitabilityMargin`,
-а `application_server` сохраняет и возвращает эти поля в `ApplicationResponse`.
+а `application_server` сохраняет и возвращает эти поля в `ApplicationResponse`. Метрики, не имеющие смысла для исхода
+(ставка и платёж при отказе), равны `null`.
+
+Реализованы также: идемпотентность по `Idempotency-Key` (409 при другом содержимом), `PENDING` с ответом `202` для
+ручной проверки (рейтинг D или сумма свыше 30 млн), `GET /api/v1/decisions/{decisionId}`, очередь
+`GET /api/v1/decisions?status=PENDING` и `POST /api/v1/decisions/{decisionId}/resolve`, после которого сервис отправляет
+callback с повторами (раздел 5). Подробности и тестовые клиенты — в `../decision_service/README.md`.
