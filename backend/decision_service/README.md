@@ -72,6 +72,13 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8090 --reload
 ```
 
+Тесты (правила скоринга, тестовые клиенты, контракт API, ручная проверка с callback'ом в фейковый `application_server`):
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests
+```
+
 | Переменная | По умолчанию | Назначение |
 |------------|--------------|------------|
 | `INTERNAL_SERVICE_TOKEN` | `change-me-internal-token` | межсервисный токен, общий с `application_server` |
