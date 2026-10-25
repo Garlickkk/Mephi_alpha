@@ -1,8 +1,10 @@
 package ru.cabinet.user.data.models
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDate
 
 data class UserResponse(
+    @JsonProperty("client_id")
     val id: Long?,
     val login: String,
     val firstName: String,
@@ -13,7 +15,7 @@ data class UserResponse(
     val ogrn: String,
     val registrationDate: LocalDate,
     val okved: String,
-    val roles: List<String>          // "USER", "ADMIN" — без префикса ROLE_
+    val roles: List<String>
 )
 
 data class CreateUserRequest(

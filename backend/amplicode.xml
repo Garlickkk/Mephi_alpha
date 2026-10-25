@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AmplicodePersistenceUnitSettings">
+    <persistence-units>
+      <persistence-unit moduleName="demo" name="Default">
+        <packages>
+          <package value="ru.cabinet.user" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="demo (1) (ru.cabinet.prodects)" name="Default">
+        <packages>
+          <package value="ru.cabinet.prodects" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="applications" name="Default">
+        <packages>
+          <package value="ru.cabinet.applications" />
+        </packages>
+      </persistence-unit>
+    </persistence-units>
+  </component>
+</project>
