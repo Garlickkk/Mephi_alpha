@@ -1,61 +1,28 @@
-# Передача backend-разработчику
+# Реальная интеграция backend, 26.10.2026
+Источник: код контроллеров и DTO архива Mephi_alpha-backend_branch 2.zip (приоритет над прежней предлагаемой схемой).
 
-## Архитектура
-```mermaid
-flowchart LR
-  UI[Страницы и формы] --> Domain[Предварительный расчёт]
-  UI --> Adapter[api.js]
-  Adapter --> Mock[localStorage: только демо]
-  Adapter -. заменить .-> API[Backend API /api/v1]
-  API --> DB[База данных]
-  API --> Checks[Проверки и кредитное решение]
-  API --> AI[Будущий ИИ: только модель с открытыми весами]
-```
+| Назначение | Метод и путь | Сервис |
+|---|---|---|
+| Вход / регистрация | POST /api/v0/auth/login, /register | 8082 |
+| Обновление / выход | POST /api/v0/auth/refresh, /logout | 8082 |
+| Профиль | GET /api/v0/users/{login} | 8082 |
+| Каталог | GET /products → {products:[…]} | 8081 |
+| Создание / история | POST / GET /api/v0/applications | 8083 |
+| Статус | GET /api/v0/applications/{id} | 8083 |
+| Встречное предложение | POST /api/v0/applications/{id}/counter-offer {accept:boolean} | 8083 |
 
-Точки замены: listApplications(), createApplication(data), assistant(). Все методы асинхронны. Для production добавить getSession/login/logout и серверную проверку доступа; маршруты интерфейса не защищают данные. Сохранить контракт результата адаптера, заменить localStorage на fetch. Добавить состояния загрузки, 401, 403, 422, 429 и 5xx, отмену запросов при навигации. Ошибки API должны иметь code, message, fieldErrors, requestId.
+Bearer accessToken добавляется адаптером api.js. Не используется несуществующий /me. Авторизация только реальная. Выход очищает локальные токены даже при недоступном сервисе; серверная инвалидизация в таком случае не подтверждается.
 
-## Модель данных
-Application: id UUID, company string до 120 символов, inn string 10/12 цифр, revenue number RUB/month, ageMonths integer, amount number RUB 100000–10000000, months integer 6–60, purpose enum, status enum, createdAt ISO UTC. Серверу добавить ownerId, version, updatedAt и историю переходов. Текущая проверка ИНН проверяет только длину, без контрольного числа, чтобы разрешать синтетические данные.
+Заявка: {productId:number,calculator:{amount:number,durationYears:integer,organizationType:OOO|IP|AO,collateral:boolean,purpose:string}}. rate намеренно не отправляется: для productId сервер берёт ставку из продукта. Срок UI кратен 12 месяцам, в запросе — годы. Пределы продукта проверяются перед отправкой и повторно backend.
 
-## Будущие состояния
-```mermaid
-stateDiagram-v2
- [*] --> draft
- draft --> submitted: отправка
- submitted --> checking
- checking --> needs_info
- needs_info --> checking: данные дополнены
- checking --> approved
- checking --> declined
- checking --> counteroffer
- counteroffer --> accepted
- approved --> accepted
- accepted --> signed
- signed --> funded
-```
+Ответ: ApplicationResponse. Все четыре статуса поддержаны: UNDER_CONSIDERATION, ACCEPTED, REJECTED, COUNTER_OFFER. Исходные параметры и counterOffer разделены. Источник решений только application_server; frontend не обращается к внутреннему decision callback и не хранит заявки в localStorage.
 
-Сейчас UI создаёт только submitted. Сервер должен проверять допустимость переходов, идентификатор владельца и полномочия роли; frontend не принимает кредитных решений. На клиенте добавить русские подписи всех статусов и дальнейшее действие для needs_info/counteroffer. Опрос статусов либо SSE подключить после определения backend-контракта.
+Важные замечания команде:
+- Нет eligibility metadata в ProductGet. Возраст/залог/ООО/ИП не являются доступными фильтрами API.
+- JWT-секреты и пароли БД в архиве заданы development-конфигурацией. Не переносить их во frontend; перед публичным запуском заменить серверные значения и использовать HTTPS.
+- В user_server application.properties стоит ddl-auto=updatespring.application.name=demo — проверить и исправить на допустимое значение update перед запуском (в предоставленном архиве строка склеена).
+- При недоступности decision_service заявка остаётся UNDER_CONSIDERATION. Обновление страницы frontend лишь читает статус, не запускает серверный retry.
+- API не заявляет идемпотентность POST заявок: повторять после timeout автоматически нельзя.
+- Токены in-memory — сознательный выбор: нет длительного хранения Bearer в localStorage. Для постоянной сессии рекомендуется серверный BFF с HttpOnly cookie.
 
-## Интеграционные требования
-
-- Суммы API — рубли; проценты — годовые процентные пункты, не дробь. Для production согласовать integer minor units или decimal и правила округления.
-- Окончательный расчёт на сервере, с версиями правил и сроком действия предложения. Клиентскому расчёту не доверять.
-- Авторизация через защищённую серверную сессию и HttpOnly Secure cookie; проверка CSRF при cookie-auth, same-origin API предпочтителен.
-- Идемпотентность POST заявок, серверная валидация всех полей, optimistic locking при изменениях.
-- Данные реальных клиентов не хранить в localStorage. Не передавать секреты в frontend. ИИ не должен самостоятельно одобрять кредит.
-- Получение документов, БКИ, ФНС, подпись и выдача не входят в этот frontend. Для хакатона использовать серверные моки, зафиксировать их в THIRD_PARTY_NOTICES.
-- API-контракт ниже — предложение интерфейса интеграции, не работающий сервер.
-
-## Пример запроса
-```http
-POST /api/v1/applications
-Content-Type: application/json
-Idempotency-Key: demo-001
-
-{"company":"ООО Пример","inn":"0000000000","revenue":900000,"ageMonths":24,"amount":1500000,"months":24,"purpose":"Оборотные средства"}
-```
-
-Acceptance: повторный idempotency key не создаёт дубль; пользователь не видит чужие заявки; отрицательные суммы дают 422; неавторизованный запрос даёт 401; отказ/уточнение/альтернативные условия дают корректное действие в UI. Эти проверки требуют backend и пока не исполняются.
-
-## Обновлённая навигация
-Калькулятор только #/. CTA калькулятора → #/login → выбор «Тестовый аккаунт» → #/cabinet. «Другой» disabled. Кабинет содержит общие типы кредитов; #/select открывает модальный ИИ-диалог поверх кабинета. Закрытие/Escape → #/cabinet. #/logout удаляет демосессию. В шапке до входа отображается «Войти», после входа кнопка полностью скрывается; выход восстанавливает её. sessionStorage — только UI-мок, backend обязан заменить его настоящей сессией.
+Старый openapi.yaml с /api/v1 не является контрактом этого backend и удалён. Актуальная спецификация должна генерироваться командой backend из контроллеров.
