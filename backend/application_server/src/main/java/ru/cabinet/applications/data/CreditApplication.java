@@ -68,6 +68,25 @@ public class CreditApplication {
     @Column(name = "decision_comment", columnDefinition = "TEXT")
     private String decisionComment;
 
+    // --- метрики скоринга (заполняются decision_service) ---
+    @Column(name = "scoring_score")
+    private Integer scoringScore;
+
+    @Column(name = "risk_grade", length = 8)
+    private String riskGrade;
+
+    @Column(name = "scoring_interest_rate", precision = 6, scale = 2)
+    private BigDecimal scoringInterestRate;
+
+    @Column(name = "scoring_monthly_payment", precision = 15, scale = 2)
+    private BigDecimal scoringMonthlyPayment;
+
+    @Column(name = "dti_ratio", precision = 8, scale = 4)
+    private BigDecimal dtiRatio;
+
+    @Column(name = "profitability_margin", precision = 8, scale = 2)
+    private BigDecimal profitabilityMargin;
+
     // --- компромиссные условия ---
     @Column(name = "counter_rate", precision = 6, scale = 2)
     private BigDecimal counterRate;
@@ -112,6 +131,19 @@ public class CreditApplication {
     public void attachDecisionId(String decisionId) {
         requireStatus(ApplicationStatus.UNDER_CONSIDERATION);
         this.decisionId = decisionId;
+        touch();
+    }
+
+    /** Сохраняет объяснимые метрики скоринга отдельно от исходных условий заявки. */
+    public void applyScoringMetrics(Integer score, String riskGrade, BigDecimal interestRate,
+                                    BigDecimal monthlyPayment, BigDecimal dtiRatio,
+                                    BigDecimal profitabilityMargin) {
+        this.scoringScore = score;
+        this.riskGrade = riskGrade;
+        this.scoringInterestRate = interestRate;
+        this.scoringMonthlyPayment = monthlyPayment;
+        this.dtiRatio = dtiRatio;
+        this.profitabilityMargin = profitabilityMargin;
         touch();
     }
 
@@ -181,6 +213,12 @@ public class CreditApplication {
     public ApplicationStatus getStatus() { return status; }
     public String getDecisionId() { return decisionId; }
     public String getDecisionComment() { return decisionComment; }
+    public Integer getScoringScore() { return scoringScore; }
+    public String getRiskGrade() { return riskGrade; }
+    public BigDecimal getScoringInterestRate() { return scoringInterestRate; }
+    public BigDecimal getScoringMonthlyPayment() { return scoringMonthlyPayment; }
+    public BigDecimal getDtiRatio() { return dtiRatio; }
+    public BigDecimal getProfitabilityMargin() { return profitabilityMargin; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

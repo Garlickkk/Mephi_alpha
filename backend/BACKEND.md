@@ -133,3 +133,18 @@ cd application_server && ./mvnw spring-boot:run   # :8083
 - OpenAPI/Swagger, коллекция запросов и диаграмма состояний в отдельном файле. Диаграмма состояний заявки есть в README `application_server`.
 
 Требования хакатона (THIRD_PARTY_NOTICES, OpenAPI, коллекция запросов, тестовые данные) этим README не закрываются, их нужно сделать отдельно.
+## Scoring / decision service
+
+Добавлен `decision_service` (FastAPI, порт `8090`). `application_server` уже настроен на `DECISION_SERVICE_URL=http://localhost:8090` по умолчанию и теперь передаёт `X-Service-Token`.
+
+Локальный запуск скоринга:
+
+```bash
+cd decision_service
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8090 --reload
+```
+
+Swagger: `http://localhost:8090/docs`, healthcheck: `http://localhost:8090/health`.
+
+Скоринговые показатели (`scoringScore`, `riskGrade`, `scoringInterestRate`, `scoringMonthlyPayment`, `dtiRatio`, `profitabilityMargin`) сохраняются вместе с заявкой и возвращаются через API application_server.

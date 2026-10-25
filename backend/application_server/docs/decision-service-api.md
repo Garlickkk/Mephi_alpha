@@ -271,3 +271,11 @@ Content-Type: application/json
 `{"decisionId":"stub-1","outcome":"APPROVED","comment":"stub","counterOffer":null}` со статусом `200`.
 Такая заглушка покрывает основной сценарий. Для проверки ветки компромисса и асинхронного решения можно сделать
 вторую заглушку, которая возвращает `COUNTER_OFFER` или `PENDING` и затем вызывает callback.
+
+## 10. Реализованный scoring-service в этом репозитории
+
+В `../decision_service` добавлен FastAPI-сервис на порту `8090`, совместимый с описанным выше `POST /api/v1/decisions`.
+Он адаптирует существующий Java-контракт к скоринговой карте из 12 факторов. Пока реальные РКО/БКИ/оценка залога отсутствуют,
+они воспроизводятся детерминированными локальными моками; точка замены находится в `deterministic_external_mocks()`.
+Дополнительно сервис возвращает `score`, `riskGrade`, `interestRate`, `monthlyPayment`, `dtiRatio`, `profitabilityMargin`,
+а `application_server` сохраняет и возвращает эти поля в `ApplicationResponse`.

@@ -162,6 +162,10 @@ public class CreditApplicationService {
                 log.warn("Пустой ответ сервиса решений для заявки {}", application.getId());
                 return application;
             }
+            application.applyScoringMetrics(
+                    response.score(), response.riskGrade(), response.interestRate(),
+                    response.monthlyPayment(), response.dtiRatio(), response.profitabilityMargin()
+            );
             if (response.outcome() == DecisionOutcome.PENDING) {
                 application.attachDecisionId(response.decisionId());
             } else {

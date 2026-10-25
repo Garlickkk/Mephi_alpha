@@ -9,9 +9,12 @@ import org.springframework.web.client.RestClient;
 public class DecisionClient {
 
     private final RestClient restClient;
+    private final String internalToken;
 
-    public DecisionClient(@Qualifier("decisionRestClient") RestClient restClient) {
+    public DecisionClient(@Qualifier("decisionRestClient") RestClient restClient,
+                          @org.springframework.beans.factory.annotation.Value("${app.services.internal-token}") String internalToken) {
         this.restClient = restClient;
+        this.internalToken = internalToken;
     }
 
     /**
@@ -22,6 +25,7 @@ public class DecisionClient {
         return restClient.post()
                 .uri("/api/v1/decisions")
                 .header("Idempotency-Key", String.valueOf(request.applicationId()))
+                .header("X-Service-Token", internalToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
                 .retrieve()
