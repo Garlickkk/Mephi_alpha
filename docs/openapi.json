@@ -1,0 +1,1214 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Mephi_alpha — клиентские API и callback",
+    "version": "1.0.0",
+    "description": "Составлено по контроллерам и DTO 26.10.2026. Через localhost:8085 доступны клиентские маршруты; callback только во внутренней сети. user_server не имеет единого обработчика ошибок: часть ошибок может дать 500."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8085"
+    }
+  ],
+  "paths": {
+    "/api/v0/auth/register": {
+      "post": {
+        "summary": "Регистрация",
+        "operationId": "post__api_v0_auth_register",
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v0/auth/login": {
+      "post": {
+        "summary": "Вход",
+        "operationId": "post__api_v0_auth_login",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v0/auth/refresh": {
+      "post": {
+        "summary": "Ротация refresh-токена",
+        "operationId": "post__api_v0_auth_refresh",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v0/auth/logout": {
+      "post": {
+        "summary": "Отзыв refresh; access действует до истечения",
+        "operationId": "post__api_v0_auth_logout",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Успех"
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v0/users/me": {
+      "get": {
+        "summary": "Собственный профиль",
+        "operationId": "get__api_v0_users_me",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v0/users": {
+      "get": {
+        "summary": "Список пользователей; URL требует ADMIN, роль не выдаётся в MVP",
+        "operationId": "get__api_v0_users",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v0/users/{login}": {
+      "get": {
+        "summary": "Поиск пользователя; URL требует ADMIN, используйте /me",
+        "operationId": "get__api_v0_users_login",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "login",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/products": {
+      "get": {
+        "summary": "Каталог",
+        "operationId": "get__products",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "summary": "Продукт",
+        "operationId": "get__products_id",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v0/applications": {
+      "post": {
+        "summary": "Создать заявку",
+        "operationId": "post__api_v0_applications",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApplicationRequest"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Собственная история",
+        "operationId": "get__api_v0_applications",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApplicationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "UNDER_CONSIDERATION",
+                "ACCEPTED",
+                "REJECTED",
+                "COUNTER_OFFER"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/api/v0/applications/{id}": {
+      "get": {
+        "summary": "Своя заявка",
+        "operationId": "get__api_v0_applications_id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v0/applications/{id}/counter-offer": {
+      "post": {
+        "summary": "Ответ на встречное предложение",
+        "operationId": "post__api_v0_applications_id_counter_offer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterOfferDecision"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v0/internal/applications/{id}/decision": {
+      "post": {
+        "summary": "Внутренний callback; не доступен через frontend",
+        "operationId": "post__api_v0_internal_applications_id_decision",
+        "security": [
+          {
+            "serviceToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionCallback"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "servers": [
+          {
+            "url": "http://application-server:8083",
+            "description": "Только контейнерная сеть Compose"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "serviceToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Service-Token"
+      }
+    },
+    "schemas": {
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "secondName": {
+            "type": "string"
+          },
+          "inn": {
+            "type": "string"
+          },
+          "ogrn": {
+            "type": "string"
+          },
+          "okved": {
+            "type": "string"
+          },
+          "organizationType": {
+            "type": "string",
+            "enum": [
+              "OOO",
+              "IP",
+              "AO"
+            ]
+          },
+          "registrationDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "login",
+          "password",
+          "firstName",
+          "lastName",
+          "secondName",
+          "inn",
+          "ogrn",
+          "okved",
+          "organizationType",
+          "registrationDate"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "login",
+          "password"
+        ]
+      },
+      "RefreshRequest": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "tokenType",
+          "expiresIn"
+        ]
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "secondName": {
+            "type": "string"
+          },
+          "inn": {
+            "type": "string"
+          },
+          "ogrn": {
+            "type": "string"
+          },
+          "okved": {
+            "type": "string"
+          },
+          "organizationType": {
+            "type": "string",
+            "enum": [
+              "OOO",
+              "IP",
+              "AO"
+            ]
+          },
+          "registrationDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "client_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "purposes": {
+            "type": "string"
+          },
+          "mainDifference": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "interest": {
+            "type": "number"
+          },
+          "discountInterest": {
+            "type": "number"
+          },
+          "discountConditions": {
+            "type": "string",
+            "nullable": true
+          },
+          "minSum": {
+            "type": "integer"
+          },
+          "maxSum": {
+            "type": "integer"
+          },
+          "minDurationYear": {
+            "type": "integer"
+          },
+          "maxDurationYear": {
+            "type": "integer"
+          },
+          "repaymentTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "EQUAL_TOTAL_PARTS",
+                "EQUAL_PRINCIPAL_PARTS"
+              ]
+            }
+          }
+        }
+      },
+      "ProductList": {
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          }
+        },
+        "required": [
+          "products"
+        ]
+      },
+      "CalculatorRequest": {
+        "type": "object",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "minimum": 0.01,
+            "description": "Обязательно без productId; с продуктом ставка берётся из каталога."
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 1000
+          },
+          "durationYears": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "organizationType": {
+            "type": "string",
+            "enum": [
+              "OOO",
+              "IP",
+              "AO"
+            ]
+          },
+          "collateral": {
+            "type": "boolean"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "amount",
+          "durationYears",
+          "organizationType",
+          "collateral",
+          "purpose"
+        ]
+      },
+      "CreateApplicationRequest": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "calculator": {
+            "$ref": "#/components/schemas/CalculatorRequest"
+          }
+        },
+        "required": [
+          "calculator"
+        ]
+      },
+      "CounterOffer": {
+        "type": "object",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "nullable": true
+          },
+          "durationYears": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "CounterOfferDecision": {
+        "type": "object",
+        "properties": {
+          "accept": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accept"
+        ]
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "dateTime": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "dateTime"
+        ]
+      },
+      "DecisionCallback": {
+        "type": "object",
+        "properties": {
+          "decisionId": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "COUNTER_OFFER",
+              "PENDING"
+            ]
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "counterOffer": {
+            "$ref": "#/components/schemas/CounterOffer"
+          }
+        },
+        "required": [
+          "decisionId",
+          "outcome"
+        ]
+      },
+      "ApplicationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "UNDER_CONSIDERATION",
+              "ACCEPTED",
+              "REJECTED",
+              "COUNTER_OFFER"
+            ]
+          },
+          "organizationType": {
+            "type": "string",
+            "enum": [
+              "OOO",
+              "IP",
+              "AO"
+            ]
+          },
+          "productId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "productTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "productInterest": {
+            "type": "number",
+            "nullable": true
+          },
+          "rate": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "durationYears": {
+            "type": "integer"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "collateral": {
+            "type": "boolean"
+          },
+          "decisionComment": {
+            "type": "string",
+            "nullable": true
+          },
+          "counterOffer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CounterOffer"
+              }
+            ],
+            "nullable": true
+          },
+          "scoringScore": {
+            "type": "integer",
+            "nullable": true
+          },
+          "riskGrade": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scoringInterestRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "scoringMonthlyPayment": {
+            "type": "number",
+            "nullable": true
+          },
+          "dtiRatio": {
+            "type": "number",
+            "nullable": true
+          },
+          "profitabilityMargin": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,112 @@
+[
+  {
+    "registration": {
+      "login": "demo_approved",
+      "password": "DemoOnly2026!",
+      "firstName": "Тест",
+      "lastName": "Клиент1",
+      "secondName": "Демонстрационный",
+      "organizationType": "OOO",
+      "inn": "7700000001",
+      "ogrn": "1000000000001",
+      "registrationDate": "2019-03-01",
+      "okved": "62.01"
+    },
+    "calculator": {
+      "amount": 3000000,
+      "durationYears": 3,
+      "organizationType": "OOO",
+      "collateral": false,
+      "purpose": "Демонстрация финансирования бизнеса"
+    },
+    "expectedApplicationStatus": "ACCEPTED"
+  },
+  {
+    "registration": {
+      "login": "demo_counter_term",
+      "password": "DemoOnly2026!",
+      "firstName": "Тест",
+      "lastName": "Клиент2",
+      "secondName": "Демонстрационный",
+      "organizationType": "OOO",
+      "inn": "7700000002",
+      "ogrn": "1000000000002",
+      "registrationDate": "2019-03-01",
+      "okved": "62.01"
+    },
+    "calculator": {
+      "amount": 3000000,
+      "durationYears": 2,
+      "organizationType": "OOO",
+      "collateral": false,
+      "purpose": "Демонстрация финансирования бизнеса"
+    },
+    "expectedApplicationStatus": "COUNTER_OFFER"
+  },
+  {
+    "registration": {
+      "login": "demo_counter_amount",
+      "password": "DemoOnly2026!",
+      "firstName": "Тест",
+      "lastName": "Клиент3",
+      "secondName": "Демонстрационный",
+      "organizationType": "OOO",
+      "inn": "7700000003",
+      "ogrn": "1000000000003",
+      "registrationDate": "2019-03-01",
+      "okved": "62.01"
+    },
+    "calculator": {
+      "amount": 3000000,
+      "durationYears": 3,
+      "organizationType": "OOO",
+      "collateral": false,
+      "purpose": "Демонстрация финансирования бизнеса"
+    },
+    "expectedApplicationStatus": "COUNTER_OFFER"
+  },
+  {
+    "registration": {
+      "login": "demo_rejected",
+      "password": "DemoOnly2026!",
+      "firstName": "Тест",
+      "lastName": "Клиент4",
+      "secondName": "Демонстрационный",
+      "organizationType": "OOO",
+      "inn": "7700000004",
+      "ogrn": "1000000000004",
+      "registrationDate": "2019-03-01",
+      "okved": "62.01"
+    },
+    "calculator": {
+      "amount": 1000000,
+      "durationYears": 3,
+      "organizationType": "OOO",
+      "collateral": false,
+      "purpose": "Демонстрация финансирования бизнеса"
+    },
+    "expectedApplicationStatus": "REJECTED"
+  },
+  {
+    "registration": {
+      "login": "demo_manual",
+      "password": "DemoOnly2026!",
+      "firstName": "Тест",
+      "lastName": "Клиент5",
+      "secondName": "Демонстрационный",
+      "organizationType": "OOO",
+      "inn": "7700000005",
+      "ogrn": "1000000000005",
+      "registrationDate": "2019-03-01",
+      "okved": "62.01"
+    },
+    "calculator": {
+      "amount": 3000000,
+      "durationYears": 3,
+      "organizationType": "OOO",
+      "collateral": true,
+      "purpose": "Демонстрация финансирования бизнеса"
+    },
+    "expectedApplicationStatus": "UNDER_CONSIDERATION"
+  }
+]

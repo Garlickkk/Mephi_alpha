@@ -1,15 +1,7 @@
-Core DS / @alfalab/icons, MIT, https://github.com/core-ds/icons
-Source commit: 6d1268ab01a4d8b8f369be9b11b42d66da08b797
-ArrowLeftMIcon from packages/android/src/ArrowLeftMIcon.tsx.
-Converted JSX attributes to SVG attributes; displayed rotated for forward actions.
-Core Components documentation supplied by user: https://core-ds.github.io/core-components/master/?path=/docs/intro--docs
-No external fonts, paid APIs, datasets or LLMs used at runtime.
-Nginx 1.28.0-alpine is optional Docker web server (BSD-2-Clause license for Nginx).
-Simulated: login, application submission/storage, interest rates and AI assistant.
-Alfa-Bank name and visual branding used only for an educational prototype; no affiliation implied.
-V2: UserMIcon and BriefcaseMIcon from packages/glyph/src of the same pinned Core DS commit, converted from JSX to SVG.
-V2 supersedes previous simulation notes: no login or AI. Simulated company profile, product eligibility, mathematical rules and local application history. No LLM or external scoring service.
-Homepage update: LogoAlfabankMColorIcon (classic), ChartLineAscMIcon, DocumentCheckmarkMIcon and ShieldMIcon (glyph), official Core DS, same pinned commit, JSX converted to SVG.
-Business-growth illustration: generated with ImageGen for this prototype; bundled locally. No image generation service is required at runtime.
+Актуальный общий перечень: ../THIRD_PARTY_NOTICES
+Политика учёта компонентов: ../THIRD_PARTY_POLICY.md
 
-Backend integration supersedes simulation notes: no local scoring, profile, application persistence or demo authentication. Actual API calls via same-origin proxy. Backend archive not modified or redistributed with frontend.
+Перечень охватывает Core DS SVG, иллюстрацию ImageGen, системные шрифты, Nginx,
+зависимости backend, синтетические данные и смоделированные интеграции.
+Прежние сведения о демовходе, локальной истории и скоринге frontend устарели
+и заменены описанием фактических API этого репозитория.

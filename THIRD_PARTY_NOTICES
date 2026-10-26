@@ -1,0 +1,91 @@
+# Сторонние компоненты и смоделированные интеграции
+
+Состояние репозитория: 26.10.2026. Источники состава: POM трёх JVM-сервисов,
+requirements*.txt, Dockerfile, frontend/package.json и frontend/dist/assets.
+Это перечень ключевых компонентов, не полный SBOM транзитивных/системных пакетов.
+
+## Программные компоненты
+
+| Компонент | Версия / фиксация | Назначение | Лицензия / источник |
+|---|---|---|---|
+| Spring Boot, Framework, Data JPA, Security, Validation | Boot 4.1.2; остальные по BOM | JVM API и тесты | Apache-2.0; https://github.com/spring-projects/spring-boot |
+| Kotlin stdlib, reflect, compiler plugins, kotlin-test-junit5 | 2.3.21 | Kotlin-сервисы, сборка, тесты | Apache-2.0; https://github.com/JetBrains/kotlin |
+| JJWT api / impl / jackson | 0.13.0 | JWT | Apache-2.0; https://github.com/jwtk/jjwt |
+| Jackson 2 / Jackson 3, jackson-module-kotlin | Spring Boot BOM | JSON | Apache-2.0; https://github.com/FasterXML |
+| PostgreSQL JDBC | Spring Boot BOM | драйвер БД | BSD-2-Clause; https://github.com/pgjdbc/pgjdbc |
+| Hibernate ORM (транзитивно) | 7.4.13.Final по текущему Spring Boot BOM | ORM | Apache-2.0 (по POM этой версии); https://github.com/hibernate/hibernate-orm |
+| Spring test starters / JUnit Jupiter (транзитивно) | Spring Boot BOM | тесты | Apache-2.0 / EPL-2.0; https://github.com/junit-team/junit-framework |
+| Maven / Maven Wrapper | 3.10.0 / 3.3.4 | сборка | Apache-2.0; https://maven.apache.org/ |
+| Eclipse Temurin / OpenJDK | 21, образы 21-jdk-jammy и 21-jre-jammy | Java runtime и сборка | GPL-2.0 with Classpath Exception и notices; https://adoptium.net/ |
+| Python | 3.11.11-slim-bookworm | скоринг; stdlib для dev-прокси | PSF-2.0 и включённые компоненты; https://docs.python.org/3/license.html |
+| FastAPI | 0.115.6 | API скоринга | MIT; https://github.com/fastapi/fastapi/blob/0.115.6/LICENSE |
+| Pydantic | 2.10.4 | валидация | MIT; https://github.com/pydantic/pydantic/blob/v2.10.4/LICENSE |
+| Uvicorn [standard] | 0.34.0 | ASGI-сервер | BSD-3-Clause; https://github.com/encode/uvicorn/blob/0.34.0/LICENSE.md |
+| Starlette, pydantic-core, anyio и extras Uvicorn | транзитивные; полного lock-файла нет | ASGI, валидация, сеть | собственные лицензии пакетов; состав уточняется по окружению |
+| pytest / HTTPX | 8.3.4 / 0.28.1 | тесты | MIT / BSD-3-Clause; https://github.com/pytest-dev/pytest ; https://github.com/encode/httpx |
+| PostgreSQL | postgres:16.6-alpine | три БД | PostgreSQL License; https://www.postgresql.org/about/licence/ |
+| Nginx | 1.28.0-alpine | frontend и proxy | BSD-2-Clause; https://nginx.org/LICENSE |
+| Node.js | >=22, только frontend-тесты | node:test, npm-зависимостей нет | MIT и notices Node.js; https://github.com/nodejs/node/blob/main/LICENSE |
+
+Alpine, Ubuntu Jammy и Debian Bookworm содержат пакеты с собственными лицензиями.
+Лицензия Nginx/Python/OpenJDK не распространяется на весь образ. Теги без digest
+не гарантируют побитовую воспроизводимость; Python-транзитивные версии не закреплены.
+
+## Ресурсы frontend и дизайн
+
+Core DS / @alfalab/icons: https://github.com/core-ds/icons
+Commit из ранее существовавшего уведомления frontend:
+6d1268ab01a4d8b8f369be9b11b42d66da08b797.
+MIT подтверждена полем license в package.json этой ревизии, версия пакета 3.510.0:
+https://github.com/core-ds/icons/blob/6d1268ab01a4d8b8f369be9b11b42d66da08b797/package.json
+В корневом списке файлов ревизии LICENSE отсутствует. Полный текст уведомления
+авторов остаётся открытым пунктом перед распространением.
+
+Локальные SVG в frontend/dist/assets преобразованы из JSX (заменены атрибуты):
+- arrow.svg — ArrowLeftMIcon, packages/android/src; отображается повёрнутой для действий вперёд.
+- user.svg — UserMIcon, packages/glyph/src.
+- business.svg — BriefcaseMIcon, packages/glyph/src.
+- alfa-logo.svg — LogoAlfabankMColorIcon, packages/classic/src.
+- chart.svg — ChartLineAscMIcon, packages/glyph/src.
+- document.svg — DocumentCheckmarkMIcon, packages/glyph/src.
+- shield.svg — ShieldMIcon, packages/glyph/src.
+
+Референс дизайна из прежнего уведомления:
+https://core-ds.github.io/core-components/master/?path=/docs/intro--docs
+Пакет Core Components не установлен и не является runtime-зависимостью.
+
+business-growth.png — иллюстрация ImageGen для прототипа (происхождение зафиксировано
+ранее в frontend/THIRD_PARTY_NOTICES). Готовый файл поставляется локально; ImageGen
+не вызывается работающим приложением. Точная модель/идентификатор генерации в
+репозитории не указаны. Это ресурс разработки, не модель кредитного решения.
+
+Arial/Helvetica — системные шрифты с fallback sans-serif. Файлы шрифтов не
+поставляются, font CDN нет. Название и визуальные элементы Альфа-Банка используются
+в учебном прототипе кейса; это не подтверждение аффилированности или передачи прав
+на товарные знаки.
+
+## Модели, данные, сервисы и имитации
+
+- LLM, загружаемых весов, обученных ML-моделей и сторонних обучающих датасетов нет.
+- Скоринг — формализованная балльная логика main.py. original_scoring_algorithm.py
+  хранит исходный вариант; Docker копирует только main.py. Отдельный внешний
+  источник алгоритма в репозитории не указан.
+- demo/clients.json, demo/products.sql и deterministic_external_mocks синтетические.
+  Совпадение ИНН с реальной организацией не означает использование её сведений.
+- БКИ: локально моделируется качество кредитной истории; реальных запросов нет.
+- Обороты, расходы, долговые платежи, стоимость залога моделируются по ИНН;
+  пять демонстрационных ИНН имеют фиксированные профили.
+- ЕГРЮЛ/ЕГРИП/ФНС: реального запроса и отдельного mock API нет. ИНН, ОГРН, ОКВЭД,
+  тип и дата регистрации вводятся пользователем и не проверяются в реестре.
+- Ручная проверка — API /resolve с общим токеном; отдельного рабочего места
+  и персональной аутентификации сотрудника нет.
+- Подписание, выдача денег, проверка документов и персонализированные новости
+  не реализованы; это не действующие интеграции.
+- Авторизация, профиль, каталог, история frontend обращаются к реальным сервисам
+  этого репозитория. Демовхода, локальной истории и локального скоринга frontend нет.
+- В runtime нет платных API, SaaS-подписок, SMS, почты, мессенджеров и доступа
+  к корпоративной инфраструктуре Альфа-Банка.
+
+Лицензия собственного кода команды отдельно не выбрана и не становится MIT из-за
+этого файла. Сохраняйте LICENSE/NOTICE сторонних пакетов при подготовке дистрибутива.
+Открытые пункты проверки: docs/COMPLIANCE.md.
