@@ -1,0 +1,7 @@
+services:
+  frontend:
+    build: .
+    ports:
+      - "8085:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

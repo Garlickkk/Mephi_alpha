@@ -1,0 +1,38 @@
+# Local operating system files
+.DS_Store
+Thumbs.db
+
+# Dependencies and package manager caches
+node_modules/
+.pnpm-store/
+.npm/
+
+# Secrets and machine-specific configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+
+# Logs, test reports and caches
+*.log
+coverage/
+playwright-report/
+test-results/
+.cache/
+*.tsbuildinfo
+
+# Editor-local files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# IMPORTANT: frontend/dist contains source files and MUST be committed.
+# Keep package lock files tracked when dependencies are added.
