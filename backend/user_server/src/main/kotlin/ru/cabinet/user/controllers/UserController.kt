@@ -1,19 +1,17 @@
 package ru.cabinet.user.controllers
 
 
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import ru.cabinet.user.api.services.UserService
-import ru.cabinet.user.data.models.CreateUserRequest
-import ru.cabinet.user.data.models.MeResponse
-import ru.cabinet.user.data.models.UpdateUserRequest
-import ru.cabinet.user.data.models.UserResponse
+import java.security.Principal
 
 @RestController
 @RequestMapping("/api/v0/users")
 class UserController(private val userService: UserService) {
+
+    @GetMapping("/me")
+    fun me(principal: Principal) = userService.getByLogin(principal.name)
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")                 // только админ

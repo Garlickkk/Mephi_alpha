@@ -1,0 +1,645 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Mephi_alpha — Decision API",
+    "version": "1.1.0",
+    "description": "Ручной снимок контракта main.py. Генерируемый контракт также доступен /openapi.json; валидационные ошибки фактически возвращают 400."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8090"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Состояние сервиса",
+        "operationId": "get__health",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "service": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions": {
+      "post": {
+        "summary": "Скоринг; ключ должен равняться applicationId",
+        "operationId": "post__api_v1_decisions",
+        "security": [
+          {
+            "serviceToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Ручная проверка",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "get": {
+        "summary": "Очередь и решения",
+        "operationId": "get__api_v1_decisions",
+        "security": [
+          {
+            "serviceToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StoredDecision"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DECIDED",
+                "PENDING",
+                "RESOLVED"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/decisions/{decision_id}": {
+      "get": {
+        "summary": "Решение",
+        "operationId": "get__api_v1_decisions_decision_id",
+        "security": [
+          {
+            "serviceToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoredDecision"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "decision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/decisions/{decision_id}/resolve": {
+      "post": {
+        "summary": "Решение сотрудника и callback",
+        "operationId": "post__api_v1_decisions_decision_id_resolve",
+        "security": [
+          {
+            "serviceToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успех",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoredDecision"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ошибка; формат user_server может отличаться",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "decision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "dateTime": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "dateTime"
+        ]
+      },
+      "CounterOffer": {
+        "type": "object",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "nullable": true
+          },
+          "durationYears": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "ProductDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "mainDifference": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "interest": {
+            "type": "number"
+          },
+          "discountInterest": {
+            "type": "number"
+          },
+          "discountConditions": {
+            "type": "string",
+            "nullable": true
+          },
+          "minSum": {
+            "type": "integer"
+          },
+          "maxSum": {
+            "type": "integer"
+          },
+          "minDurationYear": {
+            "type": "integer"
+          },
+          "maxDurationYear": {
+            "type": "integer"
+          },
+          "repaymentTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "EQUAL_TOTAL_PARTS",
+                "EQUAL_PRINCIPAL_PARTS"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "interest"
+        ]
+      },
+      "ClientInfo": {
+        "type": "object",
+        "properties": {
+          "inn": {
+            "type": "string"
+          },
+          "organizationType": {
+            "type": "string",
+            "enum": [
+              "OOO",
+              "IP",
+              "AO"
+            ]
+          },
+          "okvedMain": {
+            "type": "string"
+          },
+          "registrationDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "inn",
+          "organizationType",
+          "okvedMain",
+          "registrationDate"
+        ]
+      },
+      "LoanInfo": {
+        "type": "object",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "durationYears": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "collateral": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "rate",
+          "amount",
+          "durationYears",
+          "purpose",
+          "collateral"
+        ]
+      },
+      "DecisionRequest": {
+        "type": "object",
+        "properties": {
+          "applicationId": {
+            "type": "integer"
+          },
+          "client": {
+            "$ref": "#/components/schemas/ClientInfo"
+          },
+          "loan": {
+            "$ref": "#/components/schemas/LoanInfo"
+          },
+          "product": {
+            "$ref": "#/components/schemas/ProductDto"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "applicationId",
+          "client",
+          "loan",
+          "requestedAt"
+        ]
+      },
+      "DecisionResponse": {
+        "type": "object",
+        "properties": {
+          "decisionId": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "COUNTER_OFFER",
+              "PENDING"
+            ]
+          },
+          "comment": {
+            "type": "string"
+          },
+          "counterOffer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CounterOffer"
+              }
+            ],
+            "nullable": true
+          },
+          "score": {
+            "type": "integer",
+            "nullable": true
+          },
+          "riskGrade": {
+            "type": "string",
+            "nullable": true
+          },
+          "interestRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "monthlyPayment": {
+            "type": "number",
+            "nullable": true
+          },
+          "dtiRatio": {
+            "type": "number",
+            "nullable": true
+          },
+          "profitabilityMargin": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "decisionId",
+          "outcome",
+          "comment"
+        ]
+      },
+      "StoredDecision": {
+        "type": "object",
+        "properties": {
+          "decisionId": {
+            "type": "string"
+          },
+          "applicationId": {
+            "type": "integer"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DECIDED",
+              "PENDING",
+              "RESOLVED"
+            ]
+          },
+          "response": {
+            "$ref": "#/components/schemas/DecisionResponse"
+          },
+          "recommendation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DecisionResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "manualReviewReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolvedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "callbackStatus": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "IN_PROGRESS",
+              "DELIVERED",
+              "FAILED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ResolveRequest": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "COUNTER_OFFER"
+            ]
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "counterOffer": {
+            "$ref": "#/components/schemas/CounterOffer"
+          },
+          "reviewer": {
+            "type": "string",
+            "default": "underwriter"
+          }
+        },
+        "required": [
+          "outcome"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "serviceToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Service-Token"
+      }
+    }
+  }
+}

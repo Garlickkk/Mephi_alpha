@@ -38,6 +38,11 @@ class SecurityConfig(
         http
             .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
+            .exceptionHandling { exceptions ->
+                exceptions.authenticationEntryPoint { _, response, _ ->
+                    response.sendError(401, "Authentication required")
+                }
+            }
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

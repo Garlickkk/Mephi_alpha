@@ -1,0 +1,141 @@
+name: mephi-alpha
+
+x-database: &database
+  image: postgres:16.6-alpine
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+    interval: 5s
+    timeout: 3s
+    retries: 20
+
+x-java-health: &java-health
+  interval: 10s
+  timeout: 5s
+  retries: 30
+  start_period: 30s
+
+services:
+  users-db:
+    <<: *database
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD:-user_pass}
+    volumes:
+      - users-data:/var/lib/postgresql/data
+
+  products-db:
+    <<: *database
+    environment:
+      POSTGRES_DB: products
+      POSTGRES_USER: product_user
+      POSTGRES_PASSWORD: ${PRODUCTS_DB_PASSWORD:-product_pass}
+    volumes:
+      - products-data:/var/lib/postgresql/data
+      - ./demo/products.sql:/docker-entrypoint-initdb.d/001-products.sql:ro
+
+  applications-db:
+    <<: *database
+    environment:
+      POSTGRES_DB: applications
+      POSTGRES_USER: applications_user
+      POSTGRES_PASSWORD: ${APPLICATIONS_DB_PASSWORD:-applications_pass}
+    volumes:
+      - applications-data:/var/lib/postgresql/data
+
+  user-server:
+    build:
+      context: ./backend
+      args:
+        SERVICE: user_server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://users-db:5432/users
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD:-user_pass}
+      TEST_SECRET_KEY: ${JWT_SECRET:-demo-only-mephi-alpha-jwt-key-64-characters-minimum-not-for-production-2026}
+      TEST_ACCESS_TOKEN_EXPIRATION: 900000
+      TEST_REFRESH_TOKEN_EXPIRATION: 86400000
+    depends_on:
+      users-db:
+        condition: service_healthy
+    healthcheck:
+      <<: *java-health
+      test: ["CMD", "bash", "-c", "</dev/tcp/127.0.0.1/8082"]
+
+  product-server:
+    build:
+      context: ./backend
+      args:
+        SERVICE: product_server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://products-db:5432/products
+      SPRING_DATASOURCE_USERNAME: product_user
+      SPRING_DATASOURCE_PASSWORD: ${PRODUCTS_DB_PASSWORD:-product_pass}
+    depends_on:
+      products-db:
+        condition: service_healthy
+    healthcheck:
+      <<: *java-health
+      test: ["CMD", "bash", "-c", "</dev/tcp/127.0.0.1/8081"]
+
+  decision-service:
+    build: ./backend/decision_service
+    environment:
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-change-me-internal-token}
+      APPLICATION_SERVICE_URL: http://application-server:8083
+    ports:
+      - "127.0.0.1:${DECISION_PORT:-8090}:8090"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  application-server:
+    build:
+      context: ./backend
+      args:
+        SERVICE: application_server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://applications-db:5432/applications
+      SPRING_DATASOURCE_USERNAME: applications_user
+      SPRING_DATASOURCE_PASSWORD: ${APPLICATIONS_DB_PASSWORD:-applications_pass}
+      JWT_SECRET: ${JWT_SECRET:-demo-only-mephi-alpha-jwt-key-64-characters-minimum-not-for-production-2026}
+      PRODUCT_SERVICE_URL: http://product-server:8081
+      DECISION_SERVICE_URL: http://decision-service:8090
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-change-me-internal-token}
+      DECISION_TIMEOUT: 5s
+    depends_on:
+      applications-db:
+        condition: service_healthy
+      product-server:
+        condition: service_healthy
+      decision-service:
+        condition: service_healthy
+    healthcheck:
+      <<: *java-health
+      test: ["CMD", "bash", "-c", "</dev/tcp/127.0.0.1/8083"]
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8085}:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      user-server:
+        condition: service_healthy
+      product-server:
+        condition: service_healthy
+      application-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  users-data:
+  products-data:
+  applications-data:

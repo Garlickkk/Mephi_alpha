@@ -1,0 +1,370 @@
+{
+  "info": {
+    "name": "Mephi_alpha — основной сценарий",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Запускать вручную по сценарию. 08/09 и 12 требуют подходящего состояния. Данные синтетические. Не запускать всю коллекцию вслепую одним Runner."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8085"
+    },
+    {
+      "key": "decisionUrl",
+      "value": "http://localhost:8090"
+    },
+    {
+      "key": "serviceToken",
+      "value": "change-me-internal-token"
+    },
+    {
+      "key": "login",
+      "value": "demo_approved"
+    },
+    {
+      "key": "password",
+      "value": "DemoOnly2026!"
+    },
+    {
+      "key": "inn",
+      "value": "7700000001"
+    },
+    {
+      "key": "ogrn",
+      "value": "1000000000001"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "productId",
+      "value": ""
+    },
+    {
+      "key": "applicationId",
+      "value": ""
+    },
+    {
+      "key": "decisionId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Регистрация (один раз; повторно используйте вход)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"password\": \"{{password}}\",\n  \"firstName\": \"Тест\",\n  \"lastName\": \"Клиент1\",\n  \"secondName\": \"Демонстрационный\",\n  \"organizationType\": \"OOO\",\n  \"inn\": \"{{inn}}\",\n  \"ogrn\": \"{{ogrn}}\",\n  \"registrationDate\": \"2019-03-01\",\n  \"okved\": \"62.01\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code < 300) { const b = pm.response.json(); pm.collectionVariables.set(\"accessToken\", b.accessToken); pm.collectionVariables.set(\"refreshToken\", b.refreshToken); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Вход",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code < 300) { const b = pm.response.json(); pm.collectionVariables.set(\"accessToken\", b.accessToken); pm.collectionVariables.set(\"refreshToken\", b.refreshToken); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Мой профиль",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/users/me"
+      }
+    },
+    {
+      "name": "04 Каталог → productId",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/products"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) { const p = pm.response.json().products.find(p => p.title === \"Потребительский кредит\"); if (p) pm.collectionVariables.set(\"productId\", p.id); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Заявка → applicationId (параметры измените для другого сценария)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/applications",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": {{productId}},\n  \"calculator\": {\n    \"amount\": 3000000,\n    \"durationYears\": 3,\n    \"organizationType\": \"OOO\",\n    \"collateral\": false,\n    \"purpose\": \"Демонстрация финансирования бизнеса\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) { const b=pm.response.json(); pm.collectionVariables.set(\"applicationId\", b.id); pm.collectionVariables.set(\"decisionId\", \"score-\"+b.id); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 История",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/applications"
+      }
+    },
+    {
+      "name": "07 Статус",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/applications/{{applicationId}}"
+      }
+    },
+    {
+      "name": "08 Принять (только COUNTER_OFFER)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/applications/{{applicationId}}/counter-offer",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accept\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "09 Отклонить (другая заявка COUNTER_OFFER)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/applications/{{applicationId}}/counter-offer",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accept\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "10 Очередь ручной проверки",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Service-Token",
+            "value": "{{serviceToken}}"
+          }
+        ],
+        "url": "{{decisionUrl}}/api/v1/decisions?status=PENDING"
+      }
+    },
+    {
+      "name": "11 Решение / callbackStatus",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Service-Token",
+            "value": "{{serviceToken}}"
+          }
+        ],
+        "url": "{{decisionUrl}}/api/v1/decisions/{{decisionId}}"
+      }
+    },
+    {
+      "name": "12 Решить (только PENDING)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Service-Token",
+            "value": "{{serviceToken}}"
+          }
+        ],
+        "url": "{{decisionUrl}}/api/v1/decisions/{{decisionId}}/resolve",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"outcome\": \"APPROVED\",\n  \"reviewer\": \"demo-underwriter\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "13 Обновить токены",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/auth/refresh",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code < 300) { const b = pm.response.json(); pm.collectionVariables.set(\"accessToken\", b.accessToken); pm.collectionVariables.set(\"refreshToken\", b.refreshToken); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Выход",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v0/auth/logout"
+      }
+    }
+  ]
+}
